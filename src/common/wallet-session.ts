@@ -9,6 +9,7 @@ export class WalletSession {
   isConnectionOpen: boolean;
   ws: WalletWs;
 
+  transactions: Transaction[];
   belongsTo: WalletClient;
 
   constructor(id: string, token: string, dApp: dApp, walletClient: WalletClient) {
@@ -16,6 +17,7 @@ export class WalletSession {
     this.token = token;
     this.dApp = dApp;
     this.belongsTo = walletClient;
+    this.transactions = [];
   }
 
   async openConnection() {
@@ -24,6 +26,7 @@ export class WalletSession {
   }
 
   close() {
+    this.ws.close();
     this.isConnectionOpen = false;
   }
 }
