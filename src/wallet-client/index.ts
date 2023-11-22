@@ -3,9 +3,9 @@ import { SessionKeyValue } from './interfaces';
 import { WalletApi } from "../api";
 
 export class WalletClient {
-  api: WalletApi
-  sessions: SessionKeyValue;
-
+  private api: WalletApi
+  private readonly sessions: SessionKeyValue;
+  public onMessage: (msg: SocketMessage) => {};
 
   constructor() {
     this.api = new WalletApi();
@@ -13,13 +13,13 @@ export class WalletClient {
   }
 
   async createConnectionToDapp(dappId: string) {
-      const result = await this.api.createNewConnection(dappId);
+    const result = await this.api.createNewConnection(dappId);
 
-      if (result.success) {
-        return result.content;
-      }
+    if (result.success) {
+      return result.content;
+    }
 
-      return null;
+    return null;
   }
 
   closeConnectionToDapp(dappId: string) {
@@ -40,11 +40,19 @@ export class WalletClient {
 
   }
 
-  onTransaction(tx: Transaction) {
-
+  async approveTransaction(tx: Transaction, txHash: string) {
+    const session = this.sessions[tx.session_id];
+    if (!session) {
+      throw new Error("session not found");
+    }
+    await this.api.approveTransaction(session, tx.transaction_id, txHash);
   }
 
-  approveTransaction() {
-
+  async rejectTransaction(tx: Transaction) {
+    const session = this.sessions[tx.session_id];
+    if (!session) {
+      throw new Error("session not found");
+    }
+    await this.api.rejectTransaction(session, tx.transaction_id);
   }
 }
