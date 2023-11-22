@@ -36,10 +36,6 @@ export class WalletClient {
     delete session[session.id];
   }
 
-  listenToEvents() {
-
-  }
-
   async approveTransaction(tx: Transaction, txHash: string) {
     const session = this.sessions[tx.session_id];
     if (!session) {
