@@ -1,34 +1,50 @@
-import { WalletSession } from '../common';
 import axios from 'axios';
-import { ApiUrl } from './constants';
 import { SessionDtoForUser } from './dto';
 import { Response } from "../interfaces";
 
 export class WalletApi {
-  constructor() {
+  private readonly apiUrl: string;
+  private token: string;
+  private sessionId: string;
+
+  constructor(apiUrl: string) {
+    this.apiUrl = apiUrl;
+  }
+
+  setToken(token: string) {
+    this.token = token
+  }
+
+  setSessionId(sessionId: string) {
+    this.sessionId = sessionId;
   }
 
   async createNewConnection(dappId: string) {
-    const result = await axios.post<Response<SessionDtoForUser>>(`${ApiUrl}session`, {
+    const result = await axios.post<Response<SessionDtoForUser>>(`${this.apiUrl}session`, {
       dapp_id: dappId
     })
 
     return result.data;
   }
 
-  async acceptConnection(session: WalletSession, userAddress: string) {
-    const result = await axios.patch<Response<null>>(`${ApiUrl}session/${session.id}/accept`, {
+  // TODO:
+  // async connectToDapp(dappUrl: string, sessionId: string) {
+  //   // axios.get(`${dappUrl}`)
+  // }
+
+  async acceptConnection(userAddress: string) {
+    const result = await axios.patch<Response<null>>(`${this.apiUrl}session/${this.sessionId}/accept`, {
       address: userAddress
     })
 
     return result.data;
   }
 
-  async rejectConnection(session: WalletSession) {
-    const result = await axios.patch<Response<null>>(`${ApiUrl}session/${session.id}/reject`, {},
+  async rejectConnection() {
+    const result = await axios.patch<Response<null>>(`${this.apiUrl}session/${this.sessionId}/reject`, {},
       {
         headers: {
-          'x-user-key': session.token,
+          'x-user-key': this.token,
         },
       }
     );
@@ -36,21 +52,21 @@ export class WalletApi {
     return result.data;
   }
 
-  async approveTransaction(session: WalletSession, transactionId: string, transactionHash: string) {
-    const result = await axios.patch<Response<null>>(`${ApiUrl}session/${session.id}/wallet/transaction/${transactionId}/approve`, {
+  async approveTransaction(transactionId: string, transactionHash: string) {
+    const result = await axios.patch<Response<null>>(`${this.apiUrl}session/${this.sessionId}/wallet/transaction/${transactionId}/approve`, {
         transaction_hash: transactionHash
       },
       {
         headers: {
-          'x-user-key': session.token,
+          'x-user-key': this.token,
         }
       });
 
     return result.data;
   }
 
-  async rejectTransaction(session: WalletSession, transactionId: string) {
-    const result = await axios.patch<Response<null>>(`${ApiUrl}session/${session.id}/wallet/transaction/${transactionId}/reject`,
+  async rejectTransaction(transactionId: string) {
+    const result = await axios.patch<Response<null>>(`${this.apiUrl}session/${this.setSessionId}/wallet/transaction/${transactionId}/reject`,
       {},
       {
         headers: {}
